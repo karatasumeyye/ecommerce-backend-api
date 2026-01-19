@@ -3,16 +3,23 @@ from .models import Product
 from categories.models import Category
 from rest_framework.validators import UniqueValidator
 import re
+from comments.serializers import CommentSerializer
 
-class ProductSerializer(serializers.Serializer):
-    id= serializers.IntegerField(read_only=True)
+class ProductSerializer(serializers.ModelSerializer):
+    # Look like you started to define fields manually but then switched to ModelSerializer approach
+    # id= serializers.IntegerField(read_only=True)
+    # description=serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    # price=serializers.DecimalField(max_digits=10, decimal_places=2)
+    # stock=serializers.IntegerField()
+    #category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
+    
     name=serializers.CharField(max_length=200, validators=[UniqueValidator(queryset=Product.objects.all())])
-    description=serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    price=serializers.DecimalField(max_digits=10, decimal_places=2)
-    stock=serializers.IntegerField()
     slug=serializers.SlugField(validators= [UniqueValidator(queryset=Product.objects.all())])
-    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
-
+    comments = CommentSerializer(many=True, read_only=True)
+    class Meta:
+        model=Product
+        fields = ["id","name","description","price","stock","slug","category","comments"]
+    
     def validate_name(self,value):
         if len(value.strip()) < 3:
             raise serializers.ValidationError("Product name must be at least 3 characters long.")
