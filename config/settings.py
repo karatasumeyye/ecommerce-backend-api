@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'comments',
     'users',
     'rest_framework.authtoken',  # For token-based authentication
-
+    'carts',
 ]
 
 MIDDLEWARE = [
