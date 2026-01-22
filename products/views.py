@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from .models import Product
 from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from .serializers import ProductSerializer
+from rest_framework.decorators import api_view, permission_classes
+from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
-#  
+from rest_framework.permissions import IsAdminUser
+
+#
 # def product_list(request):
 #     products= Product.objects.all()
 #     data = {
@@ -28,36 +30,101 @@ from rest_framework import status
 #         return JsonResponse({'error': 'Product not found'}, status=404)
 
 
-@api_view(['GET','POST'])
-def product_list(request):
-    if request.method=='GET':
-        products= Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
+@api_view(["GET"])
+def catalog_product_list(request):
+    """Catalog: List all products"""
+    if request.method == "GET":
+        products = Product.objects.filter(
+            stock__gt=0
+        )  # Only products with stock greater than 0
+        serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
-    elif request.method=='POST':
-        serializer= ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def catalog_list_product_by_catid(request,pk):
+    """Catalog: List all products"""
+    if request.method == "GET":
+        products = Product.objects.filter(category=pk)
+        serializer = ProductListSerializer(products, many=True)
+        return Response(serializer.data)
 
 
-@api_view(['GET','PUT'])
-def product_detail(request, pk):
-        if request.method =='GET':
-            try:
-                product = Product.objects.get(pk=pk)
-                serializer = ProductSerializer(product)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            except Product.DoesNotExist:
-                return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        elif request.method =='PUT':
-             product = Product.objects.get(pk=pk)
-             serializer=ProductSerializer(product,data=request.data)
-             if serializer.is_valid():
-                  serializer.save()
-                  return Response(serializer.data, status= status.HTTP_200_OK)
-             else: 
-                  return Response (serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def catalog_product_details(request, pk):
+    """Catalog: Get product details"""
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response(
+            {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    serializer = ProductSerializer(product)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def admin_list_products(request):
+    """Admin: List all products"""
+    if request.method == "GET":
+        products = Product.objects.all()
+        serializer = ProductListSerializer(products, many=True)
+        return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def admin_product_details(request, pk):
+    """Admin: Get product details"""
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response(
+            {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    serializer = ProductSerializer(product)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAdminUser])
+def admin_create_product(request):
+    """Admin: Create a new product"""
+    serializer = ProductSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["PUT"])
+@permission_classes([IsAdminUser])
+def admin_edit_product(request, pk):
+    """Admin: Edit an existing product"""
+    product = Product.objects.get(pk=pk)
+    serializer = ProductSerializer(product, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAdminUser])
+def admin_delete_product(request, pk):
+    """Admin: Delete a product"""
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response(
+            {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
+        )
+    product.delete()
+    return Response(
+        {"message": "Product deleted successfully."}, status=status.HTTP_204_NO_CONTENT
+    )

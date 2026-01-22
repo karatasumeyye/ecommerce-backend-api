@@ -4,29 +4,84 @@ from rest_framework import generics
 from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .models import Comment
 from .serializers import CommentSerializer
+from rest_framework.exceptions import ValidationError,PermissionDenied
 
 
-class CommentListView(generics.ListCreateAPIView):
+class AdminCommentList(generics.ListAPIView):
     serializer_class = CommentSerializer
+    permission_classes = [IsAdminUser]
 
-    # Create comment for a specific product
-    def perform_create(self, serializer):
-        product_id = self.kwargs['pk']
-        serializer.save(product_id=product_id)
+    def get_queryset(self):
+       pk= self.kwargs.get('pk')   # product id
+       queryset = Comment.objects.all()
 
+       if pk:
+           queryset= Comment.objects.filter(product_id=pk)
+       return queryset.order_by('-update')
+
+
+class AdminCommentEdit(generics.UpdateAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAdminUser]
+
+
+class AdminCommentDelete(generics.DestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAdminUser]
+
+
+
+class CommentList(generics.ListAPIView):
+    serializer_class = CommentSerializer
 
     def get_queryset(self):
        pk= self.kwargs['pk']
        return Comment.objects.filter(product_id=pk)
-   
-class CommentDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
 
-    
-class CommentDeleteView(generics.DestroyAPIView):
+class CommentCreate(generics.CreateAPIView):
+    serializer_class= CommentSerializer
+    permission_classes= [IsAuthenticated]
+
+    # again override perform_create to set product and user 
+    def perform_create(self,serializer):
+        product_id = self.kwargs.get("pk")
+        user = self.request.user
+        
+        exiting_comment = Comment.objects.filter(product_id=product_id, user=user)
+        if exiting_comment.exists():
+            raise ValidationError("You have already commented on this product.")
+
+        serializer.save(product_id=product_id, user=user)
+
+
+
+class CommentEdit(generics.UpdateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj.user != self.request.user:
+            raise PermissionDenied("You do not have permission to access this comment.")    
+        return obj
+
+
+class CommentDelete(generics.DestroyAPIView):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        obj = super().get_object()
+
+        if obj.user != self.request.user:
+            raise PermissionDenied("You do not have permission to delete this comment.")    
+        return obj

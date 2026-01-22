@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from products.models import Product
+from users.models import CustomUser
 class Comment(models.Model):
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     description = models.CharField(blank=True, null=True, max_length=200)
@@ -8,6 +9,7 @@ class Comment(models.Model):
     creates= models.DateTimeField(auto_now_add=True)
     update = models.DateTimeField(auto_now=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(CustomUser,models.CASCADE)   # User who made the comment
 
     def __str__(self):
         return str(self.rating) + "|" +self.product.name
