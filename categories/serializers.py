@@ -2,13 +2,26 @@ from rest_framework import serializers
 from .models import Category
 from rest_framework.validators import UniqueValidator
 
+class CategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Category
+        fields =["id","name"]
+
+class CaretegoryDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Category
+        fields = ["id","name","description"]
+
+
 class CategorySerializer(serializers.Serializer):
     id=serializers.IntegerField(read_only=True)
     name= serializers.CharField(max_length=100,validators=[UniqueValidator(queryset=Category.objects.all())])
     description = serializers.CharField(required=False, allow_blank=True,allow_null=True)
 
     def validate(self,data):
-        if data["name"] == data["description"]:
+        name = data.get("name")
+        description = data.get("description")
+        if description and name == description:
             raise serializers.ValidationError("Category name and description cannot be the same.") 
         else:
             return data
