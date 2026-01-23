@@ -6,7 +6,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
-
+from products.services import get_product_or_404
 #
 # def product_list(request):
 #     products= Product.objects.all()
@@ -53,13 +53,7 @@ def catalog_list_product_by_catid(request,pk):
 @api_view(["GET"])
 def catalog_product_details(request, pk):
     """Catalog: Get product details"""
-    try:
-        product = Product.objects.get(pk=pk)
-    except Product.DoesNotExist:
-        return Response(
-            {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
-        )
-
+    product = get_product_or_404(pk)
     serializer = ProductSerializer(product)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -78,13 +72,7 @@ def admin_list_products(request):
 @permission_classes([IsAdminUser])
 def admin_product_details(request, pk):
     """Admin: Get product details"""
-    try:
-        product = Product.objects.get(pk=pk)
-    except Product.DoesNotExist:
-        return Response(
-            {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
-        )
-
+    product = get_product_or_404(pk)
     serializer = ProductSerializer(product)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -118,12 +106,7 @@ def admin_edit_product(request, pk):
 @permission_classes([IsAdminUser])
 def admin_delete_product(request, pk):
     """Admin: Delete a product"""
-    try:
-        product = Product.objects.get(pk=pk)
-    except Product.DoesNotExist:
-        return Response(
-            {"error": "Product not found"}, status=status.HTTP_404_NOT_FOUND
-        )
+    product = get_product_or_404(pk)
     product.delete()
     return Response(
         {"message": "Product deleted successfully."}, status=status.HTTP_204_NO_CONTENT
