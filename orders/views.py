@@ -6,33 +6,21 @@ from .models import Order, OrderItem
 from carts.models import Cart, CartItem
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .serializers import OrderSerializer, OrderStatusUpdateSerializer
+from django.db import transaction
+from carts.services import get_cart_or_create
+from .services import create_order_from_cart
 
 
 class OrderCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
+
     def post(self, request):
         user = request.user
-        cart = Cart.objects.get(user=user)
-        cart_items = cart.items.all()
-
-        if not cart_items:
-            return Response(
-                {"error": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        order = Order.objects.create(user=user)
-
-        for item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                product=item.product,
-                price=item.product.price,
-                quantity=item.quantity,
-            )
-
-        order.calculate_total()
-        cart.items.all().delete()  # Clear the cart after creating the order
+        cart = get_cart_or_create(request.user)
+        order = create_order_from_cart(request.user,cart)
+        
+       
         return Response(
             {"message": "Order created successfully.", "order_id": order.id},
             status=status.HTTP_201_CREATED,

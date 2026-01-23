@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
-
+from .services import get_category_or_404
 class CatalogCategoryList(APIView):
 
     def get(self,request):
@@ -15,10 +15,7 @@ class CatalogCategoryList(APIView):
 
 class CatalogCategoryDetails(APIView):
     def get(self,request, pk):
-        try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        category = get_category_or_404(pk)
         serializer = CaretegoryDetailSerializer(category)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -32,10 +29,7 @@ class AdminCategoryList(APIView):
 class AdminCategoryDetails(APIView):
     permission_classes=[ IsAdminUser]
     def get(self,request, pk):
-        try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        category = get_category_or_404(pk)
         serializer = CaretegoryDetailSerializer(category)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -57,10 +51,7 @@ class AdminCategoryEdit(APIView):
     permission_classes = [IsAdminUser]
 
     def put(self,request, pk):
-        try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        category = get_category_or_404(pk)
         serializer = CategorySerializer(category, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -71,9 +62,6 @@ class AdminCategoryEdit(APIView):
 class AdminCategoryDelete(APIView):
     permission_classes=[ IsAdminUser]
     def delete(self,request, pk):
-        try:
-            category = Category.objects.get(pk=pk)
-        except Category.DoesNotExist:
-            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+        category = get_category_or_404(pk)
         category.delete()
         return Response({"message": "Category deleted successfully"}, status=status.HTTP_204_NO_CONTENT)

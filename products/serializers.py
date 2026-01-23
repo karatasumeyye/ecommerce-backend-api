@@ -6,6 +6,10 @@ import re
 from comments.serializers import CommentSerializer
 from categories.serializers import CategorySerializer
 
+class OrderProductItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Product
+        fields = ['id','name','slug']
 
 class ProductListSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
