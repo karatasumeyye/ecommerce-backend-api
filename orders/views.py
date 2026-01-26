@@ -16,9 +16,17 @@ class OrderCreateView(APIView):
 
 
     def post(self, request):
-        user = request.user
+        delivery_address_id = request.data.get("delivery_address_id")
+        billing_address_id = request.data.get("billing_address_id")
+
+        if not delivery_address_id or not billing_address_id:
+            return Response(
+                {"error": "Both delivery_address_id and billing_address_id are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         cart = get_cart_or_create(request.user)
-        order = create_order_from_cart(request.user,cart)
+        order = create_order_from_cart(request.user,cart, delivery_address_id, billing_address_id)
         
        
         return Response(
