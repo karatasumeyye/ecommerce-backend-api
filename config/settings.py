@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'carts',
     'orders',
     'addresses',
+    'payments',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -144,3 +146,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.CustomUser'  # Specify the custom user model
+
+
+# Iyzico Payment Gateway Configuration 
+# !! Development (Sandbox) Keys !!
+IYZICO_API_KEY = 'sandbox-76Oj5VJM0ReKZR1K7NgtHgEYxmdN6rqE'
+IYZICO_SECRET_KEY = 'sandbox-b6HbWf7EVU3H8S7klCZ4RKKeXwgZo5OH'
+IYZICO_BASE_URL = 'sandbox-api.iyzipay.com'  # Use sandbox for testing
