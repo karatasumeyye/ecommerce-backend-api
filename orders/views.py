@@ -20,6 +20,8 @@ class OrderCreateView(APIView):
         delivery_address_id = request.data.get("delivery_address_id")
         billing_address_id = request.data.get("billing_address_id")
         cart_data = request.data.get("cart_data")
+        coupon_code = request.data.get("coupon_code")
+
 
         if not delivery_address_id or not billing_address_id:
             return Response(
@@ -39,7 +41,7 @@ class OrderCreateView(APIView):
 
         try:
             order, payment_result = create_order_from_cart(
-                request.user, cart, delivery_address_id, billing_address_id, cart_data
+                request.user, cart, delivery_address_id, billing_address_id, cart_data, coupon_code
             )
 
         except ValidationError as e:
