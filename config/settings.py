@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',  # For token-based authentication
     'carts',
     'orders',
+    'addresses',
 ]
 
 MIDDLEWARE = [
