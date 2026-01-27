@@ -7,7 +7,7 @@ from .models import Cart, CartItem
 from products.models import Product
 from rest_framework import generics
 from .serializers import CartSerializer, CartItemSerializer
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from products.services import get_product_or_404
 from .services import (
     add_product_to_cart,
@@ -20,9 +20,12 @@ class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        product_id = request.data.get("product_id")
-        quantity = request.data.get("quantity", 1)
-        add_product_to_cart(request.user, product_id, quantity)
+        try:
+            product_id = request.data.get("product_id")
+            quantity = request.data.get("quantity", 1)
+            add_product_to_cart(request.user, product_id, quantity)
+        except ValidationError as e:
+            return Response({"error": str(e.detail[0])}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {"message": "Product added to cart successfully."},
