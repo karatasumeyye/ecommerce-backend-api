@@ -6,7 +6,7 @@ class Comment(models.Model):
     rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     description = models.CharField(blank=True, null=True, max_length=200)
     active = models.BooleanField(default=True)
-    creates= models.DateTimeField(auto_now_add=True)
+    created= models.DateTimeField(auto_now_add=True)
     update = models.DateTimeField(auto_now=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(CustomUser,models.CASCADE)   # User who made the comment

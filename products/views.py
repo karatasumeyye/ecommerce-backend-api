@@ -7,6 +7,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAdminUser
 from products.services import get_product_or_404
+from core.paginations import StandardResultsSetPagination, LargeResultsSetPagination
+from rest_framework import generics, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import ProductFilter
+
+
 #
 # def product_list(request):
 #     products= Product.objects.all()
@@ -30,24 +36,38 @@ from products.services import get_product_or_404
 #         return JsonResponse({'error': 'Product not found'}, status=404)
 
 
-@api_view(["GET"])
-def catalog_product_list(request):
-    """Catalog: List all products"""
-    if request.method == "GET":
-        products = Product.objects.filter(
-            stock__gt=0
-        )  # Only products with stock greater than 0
-        serializer = ProductListSerializer(products, many=True)
-        return Response(serializer.data)
+
+
+class CatalogProductList(generics.ListAPIView):
+    serializer_class=ProductListSerializer
+    pagination_class= StandardResultsSetPagination
+    queryset= Product.objects.filter(stock__gt=0)
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = ProductFilter  # You can define a filter class if needed
+    search_fields = ['name', 'description']   # Fields available for search
+    ordering_fields = ['price', 'name']   # Fields available for ordering
+    ordering =['-id']   # Default ordering
+
+
+
+# @api_view(["GET"])
+# def catalog_product_list(request):
+#     """Catalog: List all products"""
+#     queryset =  Product.objects.filter(stock__gt=0)  # Only products with stock greater than 0
+#     paginator = StandardResultsSetPagination()
+#     result_page = paginator.paginate_queryset(queryset, request)
+#     serializer = ProductListSerializer(result_page, many=True)
+    
+#     return paginator.get_paginated_response(serializer.data)
+
 
 @api_view(["GET"])
-def catalog_list_product_by_catid(request,pk):
+def catalog_list_product_by_catid(request, pk):
     """Catalog: List all products"""
     if request.method == "GET":
         products = Product.objects.filter(category=pk)
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
-
 
 
 @api_view(["GET"])

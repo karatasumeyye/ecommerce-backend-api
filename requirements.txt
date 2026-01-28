@@ -4,3 +4,4 @@ pytest
 pytest-django
 djangorestframework-simplejwt
 iyzipay
+django-filter
