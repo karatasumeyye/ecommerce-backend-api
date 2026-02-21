@@ -4,3 +4,8 @@ pytest
 pytest-django
 djangorestframework-simplejwt
 iyzipay
+django-filter
+pillow
+drf-spectacular
+django-cors-headers
+djangorestframework-api-key

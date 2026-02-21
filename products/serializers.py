@@ -1,22 +1,28 @@
 from rest_framework import serializers
-from .models import Product
+from .models import Product, ProductImage
 from categories.models import Category
 from rest_framework.validators import UniqueValidator
 import re
 from comments.serializers import CommentSerializer
 from categories.serializers import CategorySerializer
+from .services import validate_uploaded_image
 
 class OrderProductItemSerializer(serializers.ModelSerializer):
     class Meta:
         model=Product
         fields = ['id','name','slug']
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=ProductImage
+        fields = ['id','image','alt_text']
 class ProductListSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
+    images = ProductImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Product
-        fields = ["id", "name", "price", "stock", "slug", "category"]
+        fields = ["id", "name", "price", "stock", "slug", "category","images"]
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
@@ -103,3 +109,13 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.stock = validated_data.get("stock", instance.stock)
         instance.save()
         return instance
+
+
+class ProductImageUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=ProductImage
+        fields = ['image', 'alt_text']
+
+    def validate_image(self,image):
+        validate_uploaded_image(image)
+        return image
