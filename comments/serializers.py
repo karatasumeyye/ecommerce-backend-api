@@ -8,7 +8,7 @@ class CommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()  # Custom method field to get username
     class Meta:
         model = Comment
-        fields = ["id","rating","description","active","creates","update","product","user"]
+        fields = ["id","rating","description","active","created","update","product","user"]
         # Make the product field write-only to prevent it from being displayed in the API response
         extra_kwargs = {
             'product': {'write_only': True,

@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from datetime import timedelta
 from pathlib import Path
 
+import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'rest_framework',
+    "rest_framework_api_key",
     'products',
     'categories',
     'comments',
@@ -51,16 +54,20 @@ INSTALLED_APPS = [
     'payments',
     'core',
     'coupons',
+    'drf_spectacular',
+    'corsheaders',   
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware before CommonMiddleware because it needs to add headers to responses
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -70,7 +77,27 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         #'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
+    ],
+    'DEFAULT_PERMISSION_CLASSES': ['core.permissions.HasValidAPIKey' ],  
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
+    'DEFAULT_THROTTLE_CLASSES': [
+        # 'rest_framework.throttling.AnonRateThrottle',
+        # 'rest_framework.throttling.UserRateThrottle'
+        'config.throttles.MinUserRateThrottle',
+        'config.throttles.MaxUserRateThrottle',
+        'config.throttles.MinAnonRateThrottle',
+        'config.throttles.MaxAnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        # 'anon': '100/day',
+        # 'user': '1000/day'
+        'min_anon_request': '5/minute',
+        'max_anon_request': '100/day',
+        'min_user_request': '10/minute',
+        'max_user_request': '1000/day',
+        
+    }
 }
 
 SIMPLE_JWT = {
@@ -155,3 +182,30 @@ AUTH_USER_MODEL = 'users.CustomUser'  # Specify the custom user model
 IYZICO_API_KEY = 'sandbox-76Oj5VJM0ReKZR1K7NgtHgEYxmdN6rqE'
 IYZICO_SECRET_KEY = 'sandbox-b6HbWf7EVU3H8S7klCZ4RKKeXwgZo5OH'
 IYZICO_BASE_URL = 'sandbox-api.iyzipay.com'  # Use sandbox for testing
+
+
+# Uploads
+MEDIA_URL ='/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# DRF SPECTACULAR SETTINGS, Apı Docs
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'E-Commerce API',
+    'DESCRIPTION': 'API documentation for the E-Commerce application',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+   
+}
+
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",
+    "https://sub.example.com",
+    "http://localhost:8080",
+    "http://127.0.0.1:9000",
+]
+
+# CORS_ALLOWED_ORIGINS = True
+

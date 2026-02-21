@@ -25,8 +25,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "status",
             "total_price",
             "items",
-            "delivery_address",
-            "billing_address",
+            "addresses",
+
         ]
     def get_addresses(self,obj):
         return{
