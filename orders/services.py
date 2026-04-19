@@ -9,8 +9,6 @@ from coupons.services import get_valid_coupon_or_none
 
 # ıf there is a error, don't save any changes
 
-@transaction.atomic
-def create_order_from_cart(user, cart):
 
 @transaction.atomic
 def create_order_from_cart(user, cart, delivery_address_id, billing_address_id, card_data, coupon_code=None):
