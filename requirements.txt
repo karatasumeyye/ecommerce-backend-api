@@ -8,3 +8,9 @@ djangorestframework-simplejwt
 # Async Task Queue
 celery>=5.3.0
 redis>=5.0.0
+iyzipay
+django-filter
+pillow
+drf-spectacular
+django-cors-headers
+djangorestframework-api-key

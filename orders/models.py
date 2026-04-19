@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from products.models import Product
+from addresses.models import Address
+from coupons.models import Coupon
 
 User = settings.AUTH_USER_MODEL
 ORDER_STATUS_CHOICES = [
@@ -13,9 +15,12 @@ ORDER_STATUS_CHOICES = [
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+    delivery_address = models.ForeignKey(Address, on_delete = models.PROTECT, related_name= "delivery_orders")
+    billing_address = models.ForeignKey(Address, on_delete = models.PROTECT, related_name= "billing_orders")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    coupon = models.ForeignKey(Coupon, on_delete= models.SET_NULL, null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=ORDER_STATUS_CHOICES,

@@ -5,23 +5,29 @@ from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django_filters.rest_framework import DjangoFilterBackend
+from comments.filters import CommentFilter
 
 from .models import Comment
 from .serializers import CommentSerializer
 from rest_framework.exceptions import ValidationError,PermissionDenied
-
+from core.paginations import StandardResultsSetPagination, LargeResultsSetPagination
 
 class AdminCommentList(generics.ListAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAdminUser]
+    pagination_class = LargeResultsSetPagination
+    queryset= Comment.objects.all().order_by('-update')
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = CommentFilter
 
-    def get_queryset(self):
-       pk= self.kwargs.get('pk')   # product id
-       queryset = Comment.objects.all()
+    # def get_queryset(self):
+    #    pk= self.kwargs.get('pk')   # product id
+    #    queryset = Comment.objects.all()
 
-       if pk:
-           queryset= Comment.objects.filter(product_id=pk)
-       return queryset.order_by('-update')
+    #    if pk:
+    #        queryset= Comment.objects.filter(product_id=pk)
+    #    return queryset.order_by('-update')
 
 
 class AdminCommentEdit(generics.UpdateAPIView):
@@ -39,6 +45,7 @@ class AdminCommentDelete(generics.DestroyAPIView):
 
 class CommentList(generics.ListAPIView):
     serializer_class = CommentSerializer
+    pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
        pk= self.kwargs['pk']
