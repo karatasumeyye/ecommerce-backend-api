@@ -1,5 +1,10 @@
 Django>=5.0
 djangorestframework
+drf-spectacular
 pytest
 pytest-django
 djangorestframework-simplejwt
+
+# Async Task Queue
+celery>=5.3.0
+redis>=5.0.0

@@ -1,5 +1,8 @@
 
 services:
+  # ===================
+  # ANA API SERVİSİ
+  # ===================
   api:
     build: .
     container_name: ecommerce_api
@@ -9,3 +12,33 @@ services:
       - .:/app
     env_file:
       - .env
+    depends_on:
+      - redis  # API başlamadan önce Redis hazır olmalı
+
+  # ===================
+  # REDIS - Mesaj Kuyruğu
+  # ===================
+  # Celery görevlerini burada saklıyoruz
+  # Görev akışı: Django → Redis → Celery Worker
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce_redis
+    ports:
+      - "6379:6379"
+
+  # ===================
+  # CELERY WORKER
+  # ===================
+  # Redis'teki görevleri alıp işleyen servis
+  # -l info: Log seviyesi (debug, info, warning, error)
+  celery_worker:
+    build: .
+    container_name: ecommerce_celery_worker
+    command: celery -A config worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - api

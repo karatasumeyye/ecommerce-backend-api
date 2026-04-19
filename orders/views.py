@@ -9,6 +9,7 @@ from .serializers import OrderSerializer, OrderStatusUpdateSerializer
 from django.db import transaction
 from carts.services import get_cart_or_create
 from .services import create_order_from_cart
+from .tasks import log_new_order  # ← Celery task'ını import et
 
 
 class OrderCreateView(APIView):
@@ -20,6 +21,13 @@ class OrderCreateView(APIView):
         cart = get_cart_or_create(request.user)
         order = create_order_from_cart(request.user,cart)
         
+        # =============================================
+        # CELERY TASK ÇAĞRISI
+        # =============================================
+        # .delay() = görevi kuyruğa ekle, beklemeden devam et
+        # Kullanıcı hemen yanıt alır, loglama arka planda yapılır
+        log_new_order.delay(order.id)
+        # =============================================
        
         return Response(
             {"message": "Order created successfully.", "order_id": order.id},
